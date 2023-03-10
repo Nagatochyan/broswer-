@@ -1,112 +1,107 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>TODO List</title>
+	<title>TODO List</title>
+	<style>
+		.completed {
+			text-decoration: line-through;
+		}
+	</style>
 </head>
 <body>
-  <h1>TODO List</h1>
-  
-  <form id="todo-form">
-    <input type="text" id="todo-input">
-    <button type="submit">Add</button>
-  </form>
-  
-  <ul id="todo-list">
-  </ul>
-  
-  <script>
-    const todoForm = document.getElementById('todo-form');
-    const todoInput = document.getElementById('todo-input');
-    const todoList = document.getElementById('todo-list');
-    const todos = JSON.parse(localStorage.getItem('todos')) || [];
+	<h1>TODO List</h1>
+	<input type="text" id="taskInput" placeholder="Add new task">
+	<button onclick="addTask()">Add</button>
+	<ul id="taskList"></ul>
 
-    function saveTodos() {
-      localStorage.setItem('todos', JSON.stringify(todos));
-    }
+	<script>
+		let tasks = [];
 
-    function addTodo() {
-      const todoText = todoInput.value.trim();
-      if (todoText === '') {
-        return;
-      }
-      const todo = {
-        id: Date.now(),
-        text: todoText,
-        completed: false
-      };
-      todos.push(todo);
-      saveTodos();
-      renderTodos();
-      todoInput.value = '';
-    }
+		function addTask() {
+			const taskInput = document.getElementById("taskInput");
+			const taskList = document.getElementById("taskList");
 
-    function editTodo(id, newText) {
-      const todo = todos.find(todo => todo.id === id);
-      if (todo) {
-        todo.text = newText;
-        saveTodos();
-        renderTodos();
-      }
-    }
+			if (taskInput.value === "") {
+				alert("Please enter a task!");
+				return;
+			}
 
-    function deleteTodo(id) {
-      const index = todos.findIndex(todo => todo.id === id);
-      if (index >= 0) {
-        todos.splice(index, 1);
-        saveTodos();
-        renderTodos();
-      }
-    }
+			const newTask = {
+				id: Date.now(),
+				text: taskInput.value,
+				completed: false
+			};
 
-    function toggleCompleted(id) {
-      const todo = todos.find(todo => todo.id === id);
-      if (todo) {
-        todo.completed = !todo.completed;
-        saveTodos();
-        renderTodos();
-      }
-    }
+			tasks.push(newTask);
 
-    function renderTodos() {
-      todoList.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.checked = todo.completed;
-        checkbox.addEventListener('change', () => {
-          toggleCompleted(todo.id);
-        });
-        const text = document.createElement('span');
-        text.textContent = todo.text;
-        const editButton = document.createElement('button');
-        editButton.textContent = 'Edit';
-        editButton.addEventListener('click', () => {
-          const newText = prompt('Edit the todo:', todo.text);
-          if (newText !== null && newText.trim() !== '') {
-            editTodo(todo.id, newText.trim());
-          }
-        });
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.addEventListener('click', () => {
-          deleteTodo(todo.id);
-        });
-        li.appendChild(checkbox);
-        li.appendChild(text);
-        li.appendChild(editButton);
-        li.appendChild(deleteButton);
-        todoList.appendChild(li);
-      });
-    }
+			const listItem = document.createElement("li");
+			const checkBox = document.createElement("input");
+			checkBox.type = "checkbox";
+			checkBox.id = newTask.id;
+			checkBox.onclick = function() {
+				toggleCompleted(newTask.id);
+			};
 
-    todoForm.addEventListener('submit', event => {
-      event.preventDefault();
-      addTodo();
-    });
+			const label = document.createElement("label");
+			label.setAttribute("for", newTask.id);
+			label.innerText = newTask.text;
 
-    renderTodos();
-  </script>
+			const editButton = document.createElement("button");
+			editButton.innerText = "Edit";
+			editButton.onclick = function() {
+				editTask(newTask.id);
+			};
+
+			const deleteButton = document.createElement("button");
+			deleteButton.innerText = "Delete";
+			deleteButton.onclick = function() {
+				deleteTask(newTask.id);
+			};
+
+			listItem.appendChild(checkBox);
+			listItem.appendChild(label);
+			listItem.appendChild(editButton);
+			listItem.appendChild(deleteButton);
+
+			taskList.appendChild(listItem);
+
+			taskInput.value = "";
+		}
+
+		function toggleCompleted(taskId) {
+			const task = tasks.find(t => t.id === taskId);
+			task.completed = !task.completed;
+
+			const label = document.querySelector(`label[for='${taskId}']`);
+			if (task.completed) {
+				label.classList.add("completed");
+			} else {
+				label.classList.remove("completed");
+			}
+		}
+
+		function editTask(taskId) {
+			const task = tasks.find(t => t.id === taskId);
+			const newText = prompt("Enter new task text", task.text);
+
+			if (newText === null) {
+				return;
+			}
+
+			task.text = newText;
+
+			const label = document.querySelector(`label[for='${taskId}']`);
+			label.innerText = task.text;
+		}
+
+		function deleteTask(taskId) {
+			const taskIndex = tasks.findIndex(t => t.id === taskId);
+			tasks.splice(taskIndex, 1);
+
+			const listItem = document.querySelector(`li > input[id='${taskId}']`).parentNode;
+			listItem.remove();
+		}
+	</script>
 </body>
 </html>
+
